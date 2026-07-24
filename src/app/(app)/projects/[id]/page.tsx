@@ -1,0 +1,308 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { PulseForm } from "@/components/PulseForm";
+import { ReadinessForm } from "@/components/ReadinessForm";
+import { ScorePill } from "@/components/ScorePills";
+import { requireUser } from "@/lib/auth";
+import {
+  PULSE_MIN_RESPONSES,
+  type Client,
+  type Project,
+  type ProjectPulse,
+  type ProjectPulseComment,
+  type ProjectPulseStats,
+  type ProjectReadiness,
+  type ProjectReadinessWithProfile,
+} from "@/types/database";
+import { deleteProjectAction, updateProjectAction } from "../../actions";
+
+export default async function ProjectDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const { supabase, user } = await requireUser();
+
+  const { data: project } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (!project) notFound();
+  const projectRow = project as Project;
+
+  const [
+    { data: clients },
+    { data: readinessRows },
+    { data: myPulse },
+    { data: stats },
+    { data: comments },
+  ] = await Promise.all([
+    supabase.from("clients").select("*").order("name"),
+    supabase
+      .from("project_readiness")
+      .select("*, profiles(id, display_name, email)")
+      .eq("project_id", id)
+      .order("updated_at", { ascending: false }),
+    supabase
+      .from("project_pulse")
+      .select("*")
+      .eq("project_id", id)
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("project_pulse_stats")
+      .select("*")
+      .eq("project_id", id)
+      .maybeSingle(),
+    supabase
+      .from("project_pulse_comments")
+      .select("*")
+      .eq("project_id", id)
+      .order("updated_at", { ascending: false })
+      .limit(8),
+  ]);
+
+  const clientList = (clients ?? []) as Client[];
+  const readiness = (readinessRows ?? []) as ProjectReadinessWithProfile[];
+  const mine =
+    readiness.find((row) => row.user_id === user.id) ?? null;
+  const pulseStats = (stats ?? null) as ProjectPulseStats | null;
+  const pulseComments = (comments ?? []) as ProjectPulseComment[];
+
+  return (
+    <div className="space-y-8 fade-in">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <Link href="/projects" className="text-sm font-medium text-muted hover:text-brand">
+            ← Back to projects
+          </Link>
+          <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl text-brand">
+            {projectRow.name}
+          </h1>
+          <p className="mt-2 text-muted">
+            {[projectRow.cms, projectRow.cms_version].filter(Boolean).join(" ") ||
+              "No CMS set"}
+            {projectRow.fe_stack ? ` · ${projectRow.fe_stack}` : ""}
+          </p>
+        </div>
+        <form action={deleteProjectAction}>
+          <input type="hidden" name="id" value={projectRow.id} />
+          <button type="submit" className="btn btn-danger">
+            Delete project
+          </button>
+        </form>
+      </div>
+
+      <section className="surface rounded-2xl p-6">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl">
+          Project info
+        </h2>
+        <form action={updateProjectAction} className="mt-4 grid gap-3 md:grid-cols-2">
+          <input type="hidden" name="id" value={projectRow.id} />
+          <div className="md:col-span-2">
+            <label className="label" htmlFor="name">
+              Name
+            </label>
+            <input
+              id="name"
+              name="name"
+              required
+              className="field"
+              defaultValue={projectRow.name}
+            />
+          </div>
+          <div className="md:col-span-2">
+            <label className="label" htmlFor="client_id">
+              Client
+            </label>
+            <select
+              id="client_id"
+              name="client_id"
+              required
+              className="field"
+              defaultValue={projectRow.client_id}
+            >
+              {clientList.map((client) => (
+                <option key={client.id} value={client.id}>
+                  {client.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="label" htmlFor="cms">
+              CMS
+            </label>
+            <input
+              id="cms"
+              name="cms"
+              className="field"
+              defaultValue={projectRow.cms}
+            />
+          </div>
+          <div>
+            <label className="label" htmlFor="cms_version">
+              CMS version
+            </label>
+            <input
+              id="cms_version"
+              name="cms_version"
+              className="field"
+              defaultValue={projectRow.cms_version}
+            />
+          </div>
+          <div className="md:col-span-2">
+            <label className="label" htmlFor="fe_stack">
+              FE stack
+            </label>
+            <input
+              id="fe_stack"
+              name="fe_stack"
+              className="field"
+              defaultValue={projectRow.fe_stack}
+            />
+          </div>
+          <div className="md:col-span-2">
+            <label className="label" htmlFor="notes">
+              Notes
+            </label>
+            <textarea
+              id="notes"
+              name="notes"
+              rows={3}
+              className="field"
+              defaultValue={projectRow.notes}
+            />
+          </div>
+          <div className="md:col-span-2">
+            <button type="submit" className="btn btn-primary">
+              Save project
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-2">
+        <div className="surface rounded-2xl p-6">
+          <h2 className="font-[family-name:var(--font-display)] text-2xl">
+            My readiness
+          </h2>
+          <p className="mt-1 text-sm text-muted">
+            Only you can edit your own readiness. Everyone in the org can see the
+            team table.
+          </p>
+          <div className="mt-4">
+            <ReadinessForm
+              projectId={projectRow.id}
+              readiness={mine as ProjectReadiness | null}
+            />
+          </div>
+        </div>
+
+        <div className="surface rounded-2xl p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-[family-name:var(--font-display)] text-2xl">
+              Project pulse
+            </h2>
+            <Link href="/leaderboard" className="text-sm font-semibold text-brand">
+              View leaderboard →
+            </Link>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <ScorePill label="Overall" value={pulseStats?.overall_avg ?? null} />
+            <ScorePill label="n" value={pulseStats?.response_count ?? 0} />
+            {(pulseStats?.response_count ?? 0) < PULSE_MIN_RESPONSES ? (
+              <span className="badge">Needs {PULSE_MIN_RESPONSES}+ responses to rank</span>
+            ) : (
+              <span className="badge">Ranked</span>
+            )}
+          </div>
+          <div className="mt-4">
+            <PulseForm
+              projectId={projectRow.id}
+              pulse={(myPulse as ProjectPulse | null) ?? null}
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="surface rounded-2xl p-6">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl">
+          Team readiness
+        </h2>
+        {readiness.length === 0 ? (
+          <p className="mt-3 text-muted">
+            No one has marked readiness on this project yet.
+          </p>
+        ) : (
+          <div className="table-wrap mt-4">
+            <table className="data">
+              <thead>
+                <tr>
+                  <th>Developer</th>
+                  <th>Set up</th>
+                  <th>Dev</th>
+                  <th>UAT</th>
+                  <th>Live</th>
+                  <th>BE</th>
+                  <th>FE</th>
+                  <th>QA</th>
+                </tr>
+              </thead>
+              <tbody>
+                {readiness.map((row) => (
+                  <tr key={row.id}>
+                    <td>
+                      <div className="font-semibold">
+                        {row.profiles?.display_name ?? "Unknown"}
+                        {row.user_id === user.id ? (
+                          <span className="ml-2 badge">You</span>
+                        ) : null}
+                      </div>
+                      <div className="text-xs text-muted">
+                        {row.profiles?.email}
+                      </div>
+                    </td>
+                    <td>{row.is_set_up ? "Yes" : "No"}</td>
+                    <td>{row.access_dev ? "Yes" : "No"}</td>
+                    <td>{row.access_uat ? "Yes" : "No"}</td>
+                    <td>{row.access_live ? "Yes" : "No"}</td>
+                    <td className="capitalize">{row.be_level}</td>
+                    <td className="capitalize">{row.fe_level}</td>
+                    <td className="capitalize">{row.qa_level}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      <section className="surface rounded-2xl p-6">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl">
+          Anonymous feedback
+        </h2>
+        {pulseComments.length === 0 ? (
+          <p className="mt-3 text-muted">No comments yet.</p>
+        ) : (
+          <ul className="mt-4 space-y-3">
+            {pulseComments.map((item) => (
+              <li
+                key={item.id}
+                className="rounded-xl border border-line bg-white/70 px-4 py-3"
+              >
+                <p className="text-sm">{item.comment}</p>
+                <p className="mt-2 text-xs text-muted">
+                  {new Date(item.updated_at).toLocaleString()}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </div>
+  );
+}
