@@ -98,14 +98,29 @@ export default async function LeaderboardPage() {
                       </div>
                     </td>
                     <td>
-                      <ScorePill value={Number(row.overall_avg)} />
+                      <ScorePill value={Number(row.overall_avg)} emphasize />
                     </td>
-                    <td>{Number(row.ease_avg).toFixed(1)}</td>
-                    <td>{Number(row.joy_avg).toFixed(1)}</td>
-                    <td>{Number(row.team_support_avg).toFixed(1)}</td>
-                    <td>{Number(row.clarity_avg).toFixed(1)}</td>
-                    <td>{Number(row.would_return_avg).toFixed(1)}</td>
-                    <td>{row.response_count}</td>
+                    <td>
+                      <ScorePill value={Number(row.ease_avg)} />
+                    </td>
+                    <td>
+                      <ScorePill value={Number(row.joy_avg)} />
+                    </td>
+                    <td>
+                      <ScorePill value={Number(row.team_support_avg)} />
+                    </td>
+                    <td>
+                      <ScorePill value={Number(row.clarity_avg)} />
+                    </td>
+                    <td>
+                      <ScorePill value={Number(row.would_return_avg)} />
+                    </td>
+                    <td>
+                      <ScorePill
+                        value={row.response_count}
+                        variant="count"
+                      />
+                    </td>
                   </tr>
                 ))}
               </tbody>
