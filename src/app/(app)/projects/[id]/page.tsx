@@ -5,14 +5,16 @@ import { ReadinessForm } from "@/components/ReadinessForm";
 import { ScorePill } from "@/components/ScorePills";
 import { requireUser } from "@/lib/auth";
 import {
+  getMyPulse,
+  getProject,
+  getPulseStats,
+  listClients,
+  listPulseComments,
+  listReadiness,
+} from "@/lib/data";
+import {
   PULSE_MIN_RESPONSES,
-  type Client,
-  type Project,
-  type ProjectPulse,
-  type ProjectPulseComment,
   type ProjectPulseStats,
-  type ProjectReadiness,
-  type ProjectReadinessWithProfile,
 } from "@/types/database";
 import { deleteProjectAction, updateProjectAction } from "../../actions";
 
@@ -22,55 +24,21 @@ export default async function ProjectDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { supabase, user } = await requireUser();
+  const { user } = await requireUser();
+  const projectRow = await getProject(id);
+  if (!projectRow) notFound();
 
-  const { data: project } = await supabase
-    .from("projects")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const [clientList, readiness, myPulse, stats, pulseComments] =
+    await Promise.all([
+      listClients(),
+      listReadiness(id),
+      getMyPulse(id, user.id),
+      getPulseStats(id),
+      listPulseComments(id),
+    ]);
 
-  if (!project) notFound();
-  const projectRow = project as Project;
-
-  const [
-    { data: clients },
-    { data: readinessRows },
-    { data: myPulse },
-    { data: stats },
-    { data: comments },
-  ] = await Promise.all([
-    supabase.from("clients").select("*").order("name"),
-    supabase
-      .from("project_readiness")
-      .select("*, profiles(id, display_name, email)")
-      .eq("project_id", id)
-      .order("updated_at", { ascending: false }),
-    supabase
-      .from("project_pulse")
-      .select("*")
-      .eq("project_id", id)
-      .eq("user_id", user.id)
-      .maybeSingle(),
-    supabase
-      .from("project_pulse_stats")
-      .select("*")
-      .eq("project_id", id)
-      .maybeSingle(),
-    supabase
-      .from("project_pulse_comments")
-      .select("*")
-      .eq("project_id", id)
-      .order("updated_at", { ascending: false })
-      .limit(8),
-  ]);
-
-  const clientList = (clients ?? []) as Client[];
-  const readiness = (readinessRows ?? []) as ProjectReadinessWithProfile[];
-  const mine =
-    readiness.find((row) => row.user_id === user.id) ?? null;
-  const pulseStats = (stats ?? null) as ProjectPulseStats | null;
-  const pulseComments = (comments ?? []) as ProjectPulseComment[];
+  const mine = readiness.find((row) => row.user_id === user.id) ?? null;
+  const pulseStats = stats as ProjectPulseStats | null;
 
   return (
     <div className="space-y-8 fade-in">
@@ -195,10 +163,7 @@ export default async function ProjectDetailPage({
             team table.
           </p>
           <div className="mt-4">
-            <ReadinessForm
-              projectId={projectRow.id}
-              readiness={mine as ProjectReadiness | null}
-            />
+            <ReadinessForm projectId={projectRow.id} readiness={mine} />
           </div>
         </div>
 
@@ -221,10 +186,7 @@ export default async function ProjectDetailPage({
             )}
           </div>
           <div className="mt-4">
-            <PulseForm
-              projectId={projectRow.id}
-              pulse={(myPulse as ProjectPulse | null) ?? null}
-            />
+            <PulseForm projectId={projectRow.id} pulse={myPulse} />
           </div>
         </div>
       </section>

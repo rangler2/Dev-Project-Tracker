@@ -1,6 +1,6 @@
 import { EmptyState } from "@/components/EmptyState";
-import { requireUser } from "@/lib/auth";
-import type { Client } from "@/types/database";
+import { DEMO_MODE } from "@/lib/demo";
+import { listClients } from "@/lib/data";
 import {
   createClientAction,
   deleteClientAction,
@@ -8,13 +8,7 @@ import {
 } from "../actions";
 
 export default async function ClientsPage() {
-  const { supabase } = await requireUser();
-  const { data: clients } = await supabase
-    .from("clients")
-    .select("*")
-    .order("name");
-
-  const list = (clients ?? []) as Client[];
+  const list = await listClients();
 
   return (
     <div className="space-y-8 fade-in">
@@ -25,6 +19,7 @@ export default async function ClientsPage() {
           </h1>
           <p className="mt-2 text-muted">
             Create clients, then attach projects with stack details.
+            {DEMO_MODE ? " (demo data)" : ""}
           </p>
         </div>
       </div>

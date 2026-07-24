@@ -3,7 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
+import { DEMO_MODE } from "@/lib/demo";
 import type { CompetenceLevel } from "@/types/database";
+
+function assertWritable() {
+  if (DEMO_MODE) {
+    throw new Error("Demo mode is read-only. Connect Supabase to save changes.");
+  }
+}
 
 function str(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
@@ -22,12 +29,16 @@ function intScore(formData: FormData, key: string) {
 }
 
 export async function signOut() {
+  if (DEMO_MODE) {
+    redirect("/login");
+  }
   const { supabase } = await requireUser();
   await supabase.auth.signOut();
   redirect("/login");
 }
 
 export async function createClientAction(formData: FormData) {
+  assertWritable();
   const { supabase, profile } = await requireUser();
   const name = str(formData, "name");
   if (!name) throw new Error("Client name is required");
@@ -43,6 +54,7 @@ export async function createClientAction(formData: FormData) {
 }
 
 export async function updateClientAction(formData: FormData) {
+  assertWritable();
   const { supabase } = await requireUser();
   const id = str(formData, "id");
   const name = str(formData, "name");
@@ -59,6 +71,7 @@ export async function updateClientAction(formData: FormData) {
 }
 
 export async function deleteClientAction(formData: FormData) {
+  assertWritable();
   const { supabase } = await requireUser();
   const id = str(formData, "id");
   if (!id) throw new Error("Client id is required");
@@ -71,6 +84,7 @@ export async function deleteClientAction(formData: FormData) {
 }
 
 export async function createProjectAction(formData: FormData) {
+  assertWritable();
   const { supabase, profile } = await requireUser();
   const client_id = str(formData, "client_id");
   const name = str(formData, "name");
@@ -97,6 +111,7 @@ export async function createProjectAction(formData: FormData) {
 }
 
 export async function updateProjectAction(formData: FormData) {
+  assertWritable();
   const { supabase } = await requireUser();
   const id = str(formData, "id");
   const name = str(formData, "name");
@@ -124,6 +139,7 @@ export async function updateProjectAction(formData: FormData) {
 }
 
 export async function deleteProjectAction(formData: FormData) {
+  assertWritable();
   const { supabase } = await requireUser();
   const id = str(formData, "id");
   if (!id) throw new Error("Project id is required");
@@ -136,6 +152,7 @@ export async function deleteProjectAction(formData: FormData) {
 }
 
 export async function upsertReadinessAction(formData: FormData) {
+  assertWritable();
   const { supabase, profile, user } = await requireUser();
   const project_id = str(formData, "project_id");
   if (!project_id) throw new Error("Project id is required");
@@ -175,6 +192,7 @@ export async function upsertReadinessAction(formData: FormData) {
 }
 
 export async function upsertPulseAction(formData: FormData) {
+  assertWritable();
   const { supabase, profile, user } = await requireUser();
   const project_id = str(formData, "project_id");
   if (!project_id) throw new Error("Project id is required");

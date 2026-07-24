@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
-import { requireUser } from "@/lib/auth";
-import type { Client, ProjectWithClient } from "@/types/database";
+import { DEMO_MODE } from "@/lib/demo";
+import { listClients, listProjects } from "@/lib/data";
 import { createProjectAction } from "../actions";
 
 export default async function ProjectsPage({
@@ -10,21 +10,14 @@ export default async function ProjectsPage({
   searchParams: Promise<{ client?: string }>;
 }) {
   const { client: clientFilter } = await searchParams;
-  const { supabase } = await requireUser();
-
-  const [{ data: clients }, projectsQuery] = await Promise.all([
-    supabase.from("clients").select("*").order("name"),
-    supabase
-      .from("projects")
-      .select("*, clients(id, name)")
-      .order("name"),
+  const [clientList, allProjects] = await Promise.all([
+    listClients(),
+    listProjects(),
   ]);
 
-  const clientList = (clients ?? []) as Client[];
-  let projects = (projectsQuery.data ?? []) as ProjectWithClient[];
-  if (clientFilter) {
-    projects = projects.filter((p) => p.client_id === clientFilter);
-  }
+  const projects = clientFilter
+    ? allProjects.filter((p) => p.client_id === clientFilter)
+    : allProjects;
 
   return (
     <div className="space-y-8 fade-in">
@@ -34,6 +27,7 @@ export default async function ProjectsPage({
         </h1>
         <p className="mt-2 text-muted">
           Track CMS, frontend stack, team readiness, and anonymous pulse scores.
+          {DEMO_MODE ? " (demo data)" : ""}
         </p>
       </div>
 

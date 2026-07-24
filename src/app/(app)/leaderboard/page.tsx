@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
 import { ScorePill } from "@/components/ScorePills";
-import { requireUser } from "@/lib/auth";
+import { DEMO_MODE } from "@/lib/demo";
+import { getPulseStats, listProjects } from "@/lib/data";
 import {
   PULSE_MIN_RESPONSES,
-  type ProjectWithClient,
   type ProjectPulseStats,
+  type ProjectWithClient,
 } from "@/types/database";
 
 type LeaderRow = ProjectPulseStats & {
@@ -13,24 +14,23 @@ type LeaderRow = ProjectPulseStats & {
 };
 
 export default async function LeaderboardPage() {
-  const { supabase } = await requireUser();
-
-  const [{ data: stats }, { data: projects }] = await Promise.all([
-    supabase
-      .from("project_pulse_stats")
-      .select("*")
-      .order("overall_avg", { ascending: false }),
-    supabase.from("projects").select("*, clients(id, name)"),
+  const [statsResult, projects] = await Promise.all([
+    getPulseStats(),
+    listProjects(),
   ]);
 
-  const projectMap = new Map(
-    ((projects ?? []) as ProjectWithClient[]).map((p) => [p.id, p]),
-  );
+  const stats = (
+    Array.isArray(statsResult) ? statsResult : statsResult ? [statsResult] : []
+  ) as ProjectPulseStats[];
 
-  const rows = ((stats ?? []) as ProjectPulseStats[]).map((stat) => ({
-    ...stat,
-    project: projectMap.get(stat.project_id) ?? null,
-  })) as LeaderRow[];
+  const projectMap = new Map(projects.map((p) => [p.id, p]));
+
+  const rows = stats
+    .map((stat) => ({
+      ...stat,
+      project: projectMap.get(stat.project_id) ?? null,
+    }))
+    .sort((a, b) => Number(b.overall_avg) - Number(a.overall_avg)) as LeaderRow[];
 
   const ranked = rows.filter((row) => row.response_count >= PULSE_MIN_RESPONSES);
   const emerging = rows.filter((row) => row.response_count < PULSE_MIN_RESPONSES);
@@ -44,6 +44,7 @@ export default async function LeaderboardPage() {
         <p className="mt-2 max-w-2xl text-muted">
           Top projects by anonymous feel-good feedback. Projects need at least{" "}
           {PULSE_MIN_RESPONSES} responses before they rank.
+          {DEMO_MODE ? " (demo data)" : ""}
         </p>
       </div>
 
