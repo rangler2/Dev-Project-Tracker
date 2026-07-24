@@ -1,5 +1,14 @@
+import { RatingRadioGroup } from "@/components/RatingScale";
 import { PULSE_QUESTIONS, type ProjectPulse } from "@/types/database";
 import { upsertPulseAction } from "@/app/(app)/actions";
+
+const accents = {
+  ease: "tone-ease",
+  joy: "tone-joy",
+  team_support: "tone-team",
+  clarity: "tone-clarity",
+  would_return: "tone-return",
+} as const;
 
 export function PulseForm({
   projectId,
@@ -9,7 +18,7 @@ export function PulseForm({
   pulse: ProjectPulse | null;
 }) {
   return (
-    <form action={upsertPulseAction} className="space-y-5">
+    <form action={upsertPulseAction} className="space-y-4">
       <input type="hidden" name="project_id" value={projectId} />
       <p className="text-sm text-muted">
         Scores are anonymous in reports. You can update your vote anytime; only
@@ -17,29 +26,14 @@ export function PulseForm({
       </p>
 
       {PULSE_QUESTIONS.map((question) => (
-        <fieldset key={question.key} className="space-y-2">
-          <legend className="text-sm font-semibold">
-            {question.label}
-            <span className="ml-2 font-normal text-muted">{question.prompt}</span>
-          </legend>
-          <div className="flex flex-wrap gap-2">
-            {[1, 2, 3, 4, 5].map((score) => (
-              <label
-                key={score}
-                className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-line bg-white px-3 py-2 text-sm has-[:checked]:border-brand has-[:checked]:bg-[color-mix(in_srgb,var(--brand)_10%,white)]"
-              >
-                <input
-                  type="radio"
-                  name={question.key}
-                  value={score}
-                  required
-                  defaultChecked={(pulse?.[question.key] ?? 0) === score}
-                />
-                {score}
-              </label>
-            ))}
-          </div>
-        </fieldset>
+        <RatingRadioGroup
+          key={question.key}
+          name={question.key}
+          label={question.label}
+          prompt={question.prompt}
+          defaultValue={pulse?.[question.key]}
+          accentClass={accents[question.key]}
+        />
       ))}
 
       <div>

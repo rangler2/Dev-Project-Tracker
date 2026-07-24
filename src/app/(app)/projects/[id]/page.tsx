@@ -1,8 +1,21 @@
 import Link from "next/link";
+import {
+  ClipboardList,
+  FolderKanban,
+  HeartPulse,
+  MessageSquareText,
+  UsersRound,
+} from "lucide-react";
 import { notFound } from "next/navigation";
 import { PulseForm } from "@/components/PulseForm";
 import { ReadinessForm } from "@/components/ReadinessForm";
 import { ScorePill } from "@/components/ScorePills";
+import { SectionHeading } from "@/components/SectionHeading";
+import {
+  BoolBadge,
+  CompetenceBadge,
+  EnvBadge,
+} from "@/components/StatusBadge";
 import { requireUser } from "@/lib/auth";
 import {
   getMyPulse,
@@ -65,9 +78,12 @@ export default async function ProjectDetailPage({
       </div>
 
       <section className="surface rounded-2xl p-6">
-        <h2 className="font-[family-name:var(--font-display)] text-2xl">
-          Project info
-        </h2>
+        <SectionHeading
+          title="Project info"
+          description="CMS, version, FE stack, and notes for this engagement."
+          icon={FolderKanban}
+          tone="brand"
+        />
         <form action={updateProjectAction} className="mt-4 grid gap-3 md:grid-cols-2">
           <input type="hidden" name="id" value={projectRow.id} />
           <div className="md:col-span-2">
@@ -155,36 +171,55 @@ export default async function ProjectDetailPage({
 
       <section className="grid gap-6 lg:grid-cols-2">
         <div className="surface rounded-2xl p-6">
-          <h2 className="font-[family-name:var(--font-display)] text-2xl">
-            My readiness
-          </h2>
-          <p className="mt-1 text-sm text-muted">
-            Only you can edit your own readiness. Everyone in the org can see the
-            team table.
-          </p>
+          <SectionHeading
+            title="My readiness"
+            description="Only you can edit your own readiness. Everyone in the org can see the team table."
+            icon={ClipboardList}
+            tone="sky"
+          />
           <div className="mt-4">
             <ReadinessForm projectId={projectRow.id} readiness={mine} />
           </div>
         </div>
 
         <div className="surface rounded-2xl p-6">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-[family-name:var(--font-display)] text-2xl">
-              Project pulse
-            </h2>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <SectionHeading
+              title="Project pulse"
+              description="Anonymous feel-good ratings for this project."
+              icon={HeartPulse}
+              tone="accent"
+            />
             <Link href="/leaderboard" className="text-sm font-semibold text-brand">
               View leaderboard →
             </Link>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
-            <ScorePill label="Overall" value={pulseStats?.overall_avg ?? null} />
-            <ScorePill label="n" value={pulseStats?.response_count ?? 0} />
+            <ScorePill
+              label="Overall"
+              value={pulseStats?.overall_avg ?? null}
+              emphasize
+            />
+            <ScorePill
+              label="n"
+              value={pulseStats?.response_count ?? 0}
+              variant="count"
+            />
             {(pulseStats?.response_count ?? 0) < PULSE_MIN_RESPONSES ? (
               <span className="badge">Needs {PULSE_MIN_RESPONSES}+ responses to rank</span>
             ) : (
               <span className="badge">Ranked</span>
             )}
           </div>
+          {pulseStats ? (
+            <div className="mt-3 flex flex-wrap gap-2">
+              <ScorePill label="Ease" value={Number(pulseStats.ease_avg)} />
+              <ScorePill label="Joy" value={Number(pulseStats.joy_avg)} />
+              <ScorePill label="Support" value={Number(pulseStats.team_support_avg)} />
+              <ScorePill label="Clarity" value={Number(pulseStats.clarity_avg)} />
+              <ScorePill label="Return" value={Number(pulseStats.would_return_avg)} />
+            </div>
+          ) : null}
           <div className="mt-4">
             <PulseForm projectId={projectRow.id} pulse={myPulse} />
           </div>
@@ -192,23 +227,24 @@ export default async function ProjectDetailPage({
       </section>
 
       <section className="surface rounded-2xl p-6">
-        <h2 className="font-[family-name:var(--font-display)] text-2xl">
-          Team readiness
-        </h2>
+        <SectionHeading
+          title="Team readiness"
+          description="Who is set up, which environments they can reach, and competence by discipline."
+          icon={UsersRound}
+          tone="violet"
+        />
         {readiness.length === 0 ? (
           <p className="mt-3 text-muted">
             No one has marked readiness on this project yet.
           </p>
         ) : (
           <div className="table-wrap mt-4">
-            <table className="data">
+            <table className="data readiness-table">
               <thead>
                 <tr>
                   <th>Developer</th>
                   <th>Set up</th>
-                  <th>Dev</th>
-                  <th>UAT</th>
-                  <th>Live</th>
+                  <th>Environments</th>
                   <th>BE</th>
                   <th>FE</th>
                   <th>QA</th>
@@ -228,13 +264,25 @@ export default async function ProjectDetailPage({
                         {row.profiles?.email}
                       </div>
                     </td>
-                    <td>{row.is_set_up ? "Yes" : "No"}</td>
-                    <td>{row.access_dev ? "Yes" : "No"}</td>
-                    <td>{row.access_uat ? "Yes" : "No"}</td>
-                    <td>{row.access_live ? "Yes" : "No"}</td>
-                    <td className="capitalize">{row.be_level}</td>
-                    <td className="capitalize">{row.fe_level}</td>
-                    <td className="capitalize">{row.qa_level}</td>
+                    <td>
+                      <BoolBadge value={row.is_set_up} />
+                    </td>
+                    <td>
+                      <div className="flex flex-wrap gap-1.5">
+                        <EnvBadge env="dev" value={row.access_dev} />
+                        <EnvBadge env="uat" value={row.access_uat} />
+                        <EnvBadge env="live" value={row.access_live} />
+                      </div>
+                    </td>
+                    <td>
+                      <CompetenceBadge level={row.be_level} />
+                    </td>
+                    <td>
+                      <CompetenceBadge level={row.fe_level} />
+                    </td>
+                    <td>
+                      <CompetenceBadge level={row.qa_level} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -244,9 +292,12 @@ export default async function ProjectDetailPage({
       </section>
 
       <section className="surface rounded-2xl p-6">
-        <h2 className="font-[family-name:var(--font-display)] text-2xl">
-          Anonymous feedback
-        </h2>
+        <SectionHeading
+          title="Anonymous feedback"
+          description="Recent comments with no attribution."
+          icon={MessageSquareText}
+          tone="amber"
+        />
         {pulseComments.length === 0 ? (
           <p className="mt-3 text-muted">No comments yet.</p>
         ) : (

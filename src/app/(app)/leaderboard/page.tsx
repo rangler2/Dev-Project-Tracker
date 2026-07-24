@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { Trophy } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
 import { ScorePill } from "@/components/ScorePills";
+import { SectionHeading } from "@/components/SectionHeading";
 import { DEMO_MODE } from "@/lib/demo";
 import { getPulseStats, listProjects } from "@/lib/data";
 import {
@@ -37,15 +39,20 @@ export default async function LeaderboardPage() {
 
   return (
     <div className="space-y-8 fade-in">
-      <div>
-        <h1 className="font-[family-name:var(--font-display)] text-4xl text-brand">
-          Pulse board
-        </h1>
-        <p className="mt-2 max-w-2xl text-muted">
-          Top projects by anonymous feel-good feedback. Projects need at least{" "}
-          {PULSE_MIN_RESPONSES} responses before they rank.
-          {DEMO_MODE ? " (demo data)" : ""}
-        </p>
+      <div className="flex items-start gap-3">
+        <div className="section-icon tone-accent !h-12 !w-12">
+          <Trophy size={24} aria-hidden />
+        </div>
+        <div>
+          <h1 className="font-[family-name:var(--font-display)] text-4xl text-brand">
+            Pulse board
+          </h1>
+          <p className="mt-2 max-w-2xl text-muted">
+            Top projects by anonymous feel-good feedback. Projects need at least{" "}
+            {PULSE_MIN_RESPONSES} responses before they rank.
+            {DEMO_MODE ? " (demo data)" : ""}
+          </p>
+        </div>
       </div>
 
       {ranked.length === 0 ? (
@@ -109,9 +116,12 @@ export default async function LeaderboardPage() {
 
       {emerging.length > 0 ? (
         <section className="surface rounded-2xl p-6">
-          <h2 className="font-[family-name:var(--font-display)] text-2xl">
-            Needs more feedback
-          </h2>
+          <SectionHeading
+            title="Needs more feedback"
+            description="These projects are collecting ratings but are not ranked yet."
+            icon={Trophy}
+            tone="amber"
+          />
           <ul className="mt-4 space-y-3">
             {emerging.map((row) => (
               <li
