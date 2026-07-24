@@ -327,13 +327,25 @@ table.readiness-table tbody tr:hover {
   transform-origin: left center;
 }
 
-table.pulse-board-table th.pulse-metric,
-table.pulse-board-table td.pulse-metric,
-table.pulse-board-table th:nth-child(n + 3):nth-child(-n + 8),
-table.pulse-board-table td:nth-child(n + 3):nth-child(-n + 8) {
+table.pulse-board-table {
+  table-layout: auto;
+  width: 100%;
+}
+
+table.pulse-board-table th,
+table.pulse-board-table td {
+  padding-left: 0.45rem;
+  padding-right: 0.45rem;
+}
+
+table.pulse-board-table th:nth-child(2),
+table.pulse-board-table td:nth-child(2) {
+  width: 100%;
+}
+
+table.pulse-board-table th:nth-child(n + 3),
+table.pulse-board-table td:nth-child(n + 3) {
   width: 1%;
-  padding-left: 0.4rem;
-  padding-right: 0.4rem;
   white-space: nowrap;
 }
 
