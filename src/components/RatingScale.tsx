@@ -1,12 +1,13 @@
 import { Star } from "lucide-react";
 
-const scoreColors = [
-  "var(--rating-1)",
-  "var(--rating-2)",
-  "var(--rating-3)",
-  "var(--rating-4)",
-  "var(--rating-5)",
-];
+/** Red → orange → green by score band for at-a-glance scanning. */
+export function ratingColor(value: number) {
+  if (value < 2) return "var(--rating-1)";
+  if (value < 3) return "var(--rating-2)";
+  if (value < 3.5) return "var(--rating-3)";
+  if (value < 4.25) return "var(--rating-4)";
+  return "var(--rating-5)";
+}
 
 export function RatingStars({
   value,
@@ -18,19 +19,25 @@ export function RatingStars({
   size?: number;
 }) {
   const clamped = Math.max(0, Math.min(max, Number(value) || 0));
-  const color = scoreColors[Math.max(0, Math.round(clamped) - 1)] ?? scoreColors[2];
+  const filledCount = Math.round(clamped);
+  const color = ratingColor(clamped);
 
   return (
-    <span className="rating-stars" style={{ color }} aria-label={`${clamped} of ${max}`}>
+    <span
+      className="rating-stars"
+      style={{ color }}
+      title={`${clamped.toFixed(1)} / ${max}`}
+      aria-label={`${clamped.toFixed(1)} out of ${max}`}
+    >
       {Array.from({ length: max }, (_, i) => {
-        const filled = i < Math.round(clamped);
+        const filled = i < filledCount;
         return (
           <Star
             key={i}
             size={size}
             fill={filled ? "currentColor" : "transparent"}
             strokeWidth={filled ? 0 : 1.75}
-            className={filled ? "opacity-100" : "opacity-35"}
+            className={filled ? "opacity-100" : "opacity-30"}
             aria-hidden
           />
         );
@@ -48,7 +55,7 @@ export function ScoreChip({
   value: number | null;
   label?: string;
   emphasize?: boolean;
-  variant?: "rating" | "count";
+  variant?: "rating" | "count" | "stars";
 }) {
   if (value === null || Number.isNaN(value)) {
     return (
@@ -64,6 +71,15 @@ export function ScoreChip({
       <span className={`score-chip score-chip-count${emphasize ? " score-chip-lg" : ""}`}>
         {label ? <span className="score-chip-label">{label}</span> : null}
         <strong>{Math.round(value)}</strong>
+      </span>
+    );
+  }
+
+  if (variant === "stars") {
+    return (
+      <span className={`score-stars-only${emphasize ? " score-stars-lg" : ""}`}>
+        {label ? <span className="score-chip-label">{label}</span> : null}
+        <RatingStars value={value} size={emphasize ? 16 : 14} />
       </span>
     );
   }

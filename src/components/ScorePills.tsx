@@ -9,7 +9,7 @@ export function ScorePill({
   value: number | null;
   label?: string;
   emphasize?: boolean;
-  variant?: "rating" | "count";
+  variant?: "rating" | "count" | "stars";
 }) {
   return (
     <ScoreChip

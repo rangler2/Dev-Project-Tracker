@@ -68,7 +68,7 @@ export default async function LeaderboardPage() {
       ) : (
         <section className="surface rounded-2xl p-2 sm:p-4">
           <div className="table-wrap">
-            <table className="data">
+            <table className="data pulse-board-table">
               <thead>
                 <tr>
                   <th>#</th>
@@ -79,7 +79,7 @@ export default async function LeaderboardPage() {
                   <th>Support</th>
                   <th>Clarity</th>
                   <th>Return</th>
-                  <th>Responses</th>
+                  <th>n</th>
                 </tr>
               </thead>
               <tbody>
@@ -97,23 +97,36 @@ export default async function LeaderboardPage() {
                         {row.project?.clients?.name}
                       </div>
                     </td>
-                    <td>
-                      <ScorePill value={Number(row.overall_avg)} emphasize />
+                    <td className="pulse-metric">
+                      <ScorePill
+                        value={Number(row.overall_avg)}
+                        variant="stars"
+                        emphasize
+                      />
                     </td>
-                    <td>
-                      <ScorePill value={Number(row.ease_avg)} />
+                    <td className="pulse-metric">
+                      <ScorePill value={Number(row.ease_avg)} variant="stars" />
                     </td>
-                    <td>
-                      <ScorePill value={Number(row.joy_avg)} />
+                    <td className="pulse-metric">
+                      <ScorePill value={Number(row.joy_avg)} variant="stars" />
                     </td>
-                    <td>
-                      <ScorePill value={Number(row.team_support_avg)} />
+                    <td className="pulse-metric">
+                      <ScorePill
+                        value={Number(row.team_support_avg)}
+                        variant="stars"
+                      />
                     </td>
-                    <td>
-                      <ScorePill value={Number(row.clarity_avg)} />
+                    <td className="pulse-metric">
+                      <ScorePill
+                        value={Number(row.clarity_avg)}
+                        variant="stars"
+                      />
                     </td>
-                    <td>
-                      <ScorePill value={Number(row.would_return_avg)} />
+                    <td className="pulse-metric">
+                      <ScorePill
+                        value={Number(row.would_return_avg)}
+                        variant="stars"
+                      />
                     </td>
                     <td>
                       <ScorePill
@@ -154,7 +167,12 @@ export default async function LeaderboardPage() {
                     {row.response_count} / {PULSE_MIN_RESPONSES} responses
                   </p>
                 </div>
-                <ScorePill label="Avg so far" value={Number(row.overall_avg)} />
+                <ScorePill
+                  label="Avg so far"
+                  value={Number(row.overall_avg)}
+                  variant="stars"
+                  emphasize
+                />
               </li>
             ))}
           </ul>
