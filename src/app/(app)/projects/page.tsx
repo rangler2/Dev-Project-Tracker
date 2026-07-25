@@ -72,21 +72,15 @@ export default async function ProjectsPage({
               </label>
               <input id="name" name="name" required className="field" />
             </div>
-            <div>
+            <div className="md:col-span-2">
               <label className="label" htmlFor="cms">
                 CMS
               </label>
-              <input id="cms" name="cms" className="field" placeholder="Sitecore" />
-            </div>
-            <div>
-              <label className="label" htmlFor="cms_version">
-                CMS version
-              </label>
               <input
-                id="cms_version"
-                name="cms_version"
+                id="cms"
+                name="cms"
                 className="field"
-                placeholder="10.3"
+                placeholder="Sitecore 10.3"
               />
             </div>
             <div className="md:col-span-2">

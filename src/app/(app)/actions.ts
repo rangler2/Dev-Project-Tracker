@@ -97,7 +97,7 @@ export async function createProjectAction(formData: FormData) {
       client_id,
       name,
       cms: str(formData, "cms"),
-      cms_version: str(formData, "cms_version"),
+      cms_version: "",
       fe_stack: str(formData, "fe_stack"),
       notes: str(formData, "notes"),
     })
@@ -126,7 +126,7 @@ export async function updateProjectAction(formData: FormData) {
       name,
       client_id,
       cms: str(formData, "cms"),
-      cms_version: str(formData, "cms_version"),
+      cms_version: "",
       fe_stack: str(formData, "fe_stack"),
       notes: str(formData, "notes"),
     })
