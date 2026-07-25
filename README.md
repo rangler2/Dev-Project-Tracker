@@ -33,9 +33,27 @@ Optional demo clients/projects:
 
 - [`supabase/seed.sql`](supabase/seed.sql)
 
-4. In Supabase Auth settings, you can disable email confirmation for faster internal onboarding, or leave it on.
+4. In Supabase Auth → URL configuration:
+   - **Site URL**: `http://localhost:3000` (or your deployed origin)
+   - **Redirect URLs**: include `http://localhost:3000/auth/callback` and `http://localhost:3000/auth/confirm` (plus the same paths on your production origin)
 
-5. Install and run:
+5. In Supabase Auth → Email templates, update **Confirm signup** so corporate email scanners do not consume the one-time link. Replace the default `{{ .ConfirmationURL }}` link with an intermediate confirm page:
+
+```html
+<h2>Confirm your email</h2>
+<p>Confirm your email address to finish creating your Project Tracker account.</p>
+<p>
+  <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email">
+    Confirm email address
+  </a>
+</p>
+```
+
+That page asks the user to click a button before verifying, which avoids Safe Links / prefetch tools marking the OTP as expired while still confirming the account.
+
+Alternatively, disable email confirmation for faster internal onboarding.
+
+6. Install and run:
 
 ```bash
 npm install

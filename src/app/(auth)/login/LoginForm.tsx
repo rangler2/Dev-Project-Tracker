@@ -53,7 +53,7 @@ export function LoginForm() {
       }
 
       setInfo(
-        "Check your email to confirm your account, then sign in. If confirmation is disabled in Supabase, you can sign in immediately.",
+        "Check your email and use the confirm button in the message, then sign in. If the link says it expired, try signing in — email scanners often confirm the account first.",
       );
       setMode("signin");
     } catch (err) {
