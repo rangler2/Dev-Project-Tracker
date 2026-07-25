@@ -16,8 +16,8 @@ values
     '11111111-1111-1111-1111-111111111111',
     '22222222-2222-2222-2222-222222222201',
     'Storefront relaunch',
-    'Sitecore',
-    '10.3',
+    'Sitecore 10.3',
+    '',
     'Next.js, TypeScript, Tailwind',
     'Headless storefront with shared design system.'
   ),
@@ -26,8 +26,8 @@ values
     '11111111-1111-1111-1111-111111111111',
     '22222222-2222-2222-2222-222222222202',
     'Patient portal',
-    'Contentful',
-    '2024',
+    'Contentful 2024',
+    '',
     'React, Vite, MUI',
     'Auth-gated portal with appointment booking.'
   )

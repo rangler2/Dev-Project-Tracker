@@ -80,7 +80,7 @@ export default async function ProjectDetailPage({
       <section className="surface rounded-2xl p-6">
         <SectionHeading
           title="Project info"
-          description="CMS, version, FE stack, and notes for this engagement."
+          description="CMS, FE stack, and notes for this engagement."
           icon={FolderKanban}
           tone="brand"
         />
@@ -116,7 +116,7 @@ export default async function ProjectDetailPage({
               ))}
             </select>
           </div>
-          <div>
+          <div className="md:col-span-2">
             <label className="label" htmlFor="cms">
               CMS
             </label>
@@ -124,18 +124,12 @@ export default async function ProjectDetailPage({
               id="cms"
               name="cms"
               className="field"
-              defaultValue={projectRow.cms}
-            />
-          </div>
-          <div>
-            <label className="label" htmlFor="cms_version">
-              CMS version
-            </label>
-            <input
-              id="cms_version"
-              name="cms_version"
-              className="field"
-              defaultValue={projectRow.cms_version}
+              placeholder="Sitecore 10.3"
+              defaultValue={
+                [projectRow.cms, projectRow.cms_version]
+                  .filter(Boolean)
+                  .join(" ")
+              }
             />
           </div>
           <div className="md:col-span-2">
