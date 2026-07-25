@@ -123,17 +123,18 @@ security definer
 set search_path = public
 as $$
 declare
-  domain text;
+  email_domain text;
   org_id uuid;
   name text;
 begin
-  domain := public.extract_email_domain(new.email);
+  -- Use email_domain (not "domain") to avoid clashing with organization_domains.domain
+  email_domain := public.extract_email_domain(new.email);
   select od.organization_id into org_id
   from public.organization_domains od
-  where od.domain = domain;
+  where od.domain = email_domain;
 
   if org_id is null then
-    raise exception 'Email domain % is not allowed to join any organisation', domain
+    raise exception 'Email domain % is not allowed to join any organisation', email_domain
       using errcode = '42501';
   end if;
 
