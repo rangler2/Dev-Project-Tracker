@@ -3,6 +3,20 @@ import { NextResponse, type NextRequest } from "next/server";
 import { DEMO_MODE } from "@/lib/demo";
 
 export async function updateSession(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+  const params = request.nextUrl.searchParams;
+  const hasAuthError =
+    params.has("error") ||
+    params.has("error_code") ||
+    params.has("error_description");
+
+  // Supabase Site URL failures land on /. Normalize before auth work.
+  if (hasAuthError && path !== "/login" && !path.startsWith("/auth")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
+
   if (DEMO_MODE) {
     return NextResponse.next({ request });
   }
@@ -34,7 +48,6 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const path = request.nextUrl.pathname;
   const isAuthRoute = path.startsWith("/login") || path.startsWith("/auth");
 
   if (!user && !isAuthRoute) {
@@ -43,7 +56,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && path === "/login") {
+  if (user && path === "/login" && !hasAuthError) {
     const url = request.nextUrl.clone();
     url.pathname = "/projects";
     return NextResponse.redirect(url);

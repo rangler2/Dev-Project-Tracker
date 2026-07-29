@@ -37,21 +37,22 @@ Optional demo clients/projects:
    - **Site URL**: `http://localhost:3000` (or your deployed origin)
    - **Redirect URLs**: include `http://localhost:3000/auth/callback` and `http://localhost:3000/auth/confirm` (plus the same paths on your production origin)
 
-5. In Supabase Auth → Email templates, update **Confirm signup** so corporate email scanners do not consume the one-time link. Replace the default `{{ .ConfirmationURL }}` link with an intermediate confirm page:
+5. **Required — replace the Confirm signup email template.**  
+   The default Supabase `{{ .ConfirmationURL }}` link is opened by corporate Safe Links / email scanners, which confirms the account and then shows `otp_expired` when you click it.
 
-```html
-<h2>Confirm your email</h2>
-<p>Confirm your email address to finish creating your Project Tracker account.</p>
-<p>
-  <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email">
-    Confirm email address
-  </a>
-</p>
+   Apply the project template (includes a 6-digit code + safe confirm page):
+
+```bash
+# Token: https://supabase.com/dashboard/account/tokens
+# Project ref: from https://supabase.com/dashboard/project/<ref>
+SUPABASE_ACCESS_TOKEN=... SUPABASE_PROJECT_REF=... npm run auth:template
 ```
 
-That page asks the user to click a button before verifying, which avoids Safe Links / prefetch tools marking the OTP as expired while still confirming the account.
+   Or paste [`supabase/templates/confirm_signup.html`](supabase/templates/confirm_signup.html) into **Authentication → Email Templates → Confirm signup** in the dashboard.
 
-Alternatively, disable email confirmation for faster internal onboarding.
+   After that, new signups enter the **6-digit code** in the app (do not rely on the email link).
+
+   Alternatively, disable email confirmation under Auth settings for faster internal onboarding.
 
 6. Install and run:
 
