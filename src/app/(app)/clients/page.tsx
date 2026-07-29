@@ -63,14 +63,31 @@ export default async function ClientsPage() {
                     </td>
                     <td className="text-muted">
                       {new Date(client.created_at).toLocaleDateString()}
+                      {client.project_count > 0 ? (
+                        <span className="mt-1 block text-xs">
+                          {client.project_count} project
+                          {client.project_count === 1 ? "" : "s"}
+                        </span>
+                      ) : null}
                     </td>
                     <td>
-                      <form action={deleteClientAction}>
-                        <input type="hidden" name="id" value={client.id} />
-                        <button type="submit" className="btn btn-danger text-sm">
+                      {client.project_count > 0 ? (
+                        <button
+                          type="button"
+                          className="btn btn-danger text-sm opacity-50"
+                          disabled
+                          title="Delete or reassign this client’s projects first"
+                        >
                           Delete
                         </button>
-                      </form>
+                      ) : (
+                        <form action={deleteClientAction}>
+                          <input type="hidden" name="id" value={client.id} />
+                          <button type="submit" className="btn btn-danger text-sm">
+                            Delete
+                          </button>
+                        </form>
+                      )}
                     </td>
                   </tr>
                 ))}

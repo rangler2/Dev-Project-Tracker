@@ -1,10 +1,10 @@
+import { safeInternalPath } from "@/lib/safe-redirect";
 import { ConfirmEmailForm } from "./ConfirmEmailForm";
 
 export default async function ConfirmEmailPage({
   searchParams,
 }: {
   searchParams: Promise<{
-    confirmation_url?: string;
     token_hash?: string;
     type?: string;
     next?: string;
@@ -27,10 +27,9 @@ export default async function ConfirmEmailPage({
         </p>
         <div className="mt-8">
           <ConfirmEmailForm
-            confirmationUrl={params.confirmation_url ?? null}
             tokenHash={params.token_hash ?? null}
             type={params.type ?? null}
-            next={params.next ?? "/projects"}
+            next={safeInternalPath(params.next)}
           />
         </div>
       </div>

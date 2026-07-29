@@ -76,11 +76,39 @@ export async function deleteClientAction(formData: FormData) {
   const id = str(formData, "id");
   if (!id) throw new Error("Client id is required");
 
+  const { count, error: countError } = await supabase
+    .from("projects")
+    .select("id", { count: "exact", head: true })
+    .eq("client_id", id);
+
+  if (countError) throw new Error(countError.message);
+  if ((count ?? 0) > 0) {
+    throw new Error(
+      "Cannot delete a client that still has projects. Delete or reassign those projects first.",
+    );
+  }
+
   const { error } = await supabase.from("clients").delete().eq("id", id);
   if (error) throw new Error(error.message);
 
   revalidatePath("/clients");
   revalidatePath("/projects");
+}
+
+async function assertClientInOrg(
+  supabase: Awaited<ReturnType<typeof requireUser>>["supabase"],
+  clientId: string,
+  organizationId: string,
+) {
+  const { data, error } = await supabase
+    .from("clients")
+    .select("id")
+    .eq("id", clientId)
+    .eq("organization_id", organizationId)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error("Client not found in your organisation");
 }
 
 export async function createProjectAction(formData: FormData) {
@@ -89,6 +117,8 @@ export async function createProjectAction(formData: FormData) {
   const client_id = str(formData, "client_id");
   const name = str(formData, "name");
   if (!client_id || !name) throw new Error("Client and project name are required");
+
+  await assertClientInOrg(supabase, client_id, profile.organization_id);
 
   const { data, error } = await supabase
     .from("projects")
@@ -112,13 +142,15 @@ export async function createProjectAction(formData: FormData) {
 
 export async function updateProjectAction(formData: FormData) {
   assertWritable();
-  const { supabase } = await requireUser();
+  const { supabase, profile } = await requireUser();
   const id = str(formData, "id");
   const name = str(formData, "name");
   const client_id = str(formData, "client_id");
   if (!id || !name || !client_id) {
     throw new Error("Project id, name, and client are required");
   }
+
+  await assertClientInOrg(supabase, client_id, profile.organization_id);
 
   const { error } = await supabase
     .from("projects")

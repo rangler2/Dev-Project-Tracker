@@ -10,7 +10,15 @@ import type {
   ProjectWithClient,
 } from "@/types/database";
 
-export const DEMO_MODE = process.env.DEMO_MODE === "true";
+const demoRequested = process.env.DEMO_MODE === "true";
+
+// Never bypass auth in production, even if DEMO_MODE is misconfigured.
+if (demoRequested && process.env.NODE_ENV === "production") {
+  console.error("DEMO_MODE is ignored when NODE_ENV=production");
+}
+
+export const DEMO_MODE =
+  demoRequested && process.env.NODE_ENV !== "production";
 
 export const demoOrg: Organization = {
   id: "11111111-1111-1111-1111-111111111111",
