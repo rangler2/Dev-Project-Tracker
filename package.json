@@ -7,7 +7,8 @@
     "dev:demo": "DEMO_MODE=true next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "auth:template": "node scripts/apply-confirm-email-template.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.3",
