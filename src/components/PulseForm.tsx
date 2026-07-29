@@ -18,11 +18,10 @@ export function PulseForm({
   pulse: ProjectPulse | null;
 }) {
   return (
-    <form action={upsertPulseAction} className="space-y-4">
+    <form action={upsertPulseAction} className="space-y-2.5">
       <input type="hidden" name="project_id" value={projectId} />
-      <p className="text-sm text-muted">
-        Scores are anonymous in reports. You can update your vote anytime; only
-        you can see that you submitted one.
+      <p className="text-xs text-muted">
+        Scores are anonymous in reports. Only you can see that you submitted one.
       </p>
 
       {PULSE_QUESTIONS.map((question) => (
@@ -43,8 +42,8 @@ export function PulseForm({
         <textarea
           id="comment"
           name="comment"
-          rows={3}
-          className="field"
+          rows={2}
+          className="field field-compact"
           defaultValue={pulse?.comment ?? ""}
           placeholder="What would make this project healthier?"
         />

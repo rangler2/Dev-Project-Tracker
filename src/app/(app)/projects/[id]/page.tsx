@@ -163,61 +163,44 @@ export default async function ProjectDetailPage({
         </form>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-2">
-        <div className="surface rounded-2xl p-6">
+      <section className="surface rounded-2xl p-6">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <SectionHeading
-            title="My readiness"
-            description="Only you can edit your own readiness. Everyone in the org can see the team table."
-            icon={ClipboardList}
-            tone="sky"
+            title="Project pulse"
+            description="Anonymous feel-good ratings for this project."
+            icon={HeartPulse}
+            tone="accent"
           />
-          <div className="mt-4">
-            <ReadinessForm projectId={projectRow.id} readiness={mine} />
-          </div>
+          <Link href="/leaderboard" className="text-sm font-semibold text-brand">
+            View leaderboard →
+          </Link>
         </div>
-
-        <div className="surface rounded-2xl p-6">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <SectionHeading
-              title="Project pulse"
-              description="Anonymous feel-good ratings for this project."
-              icon={HeartPulse}
-              tone="accent"
-            />
-            <Link href="/leaderboard" className="text-sm font-semibold text-brand">
-              View leaderboard →
-            </Link>
-          </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <ScorePill
+            label="Overall"
+            value={pulseStats?.overall_avg ?? null}
+            emphasize
+          />
+          <ScorePill
+            label="n"
+            value={pulseStats?.response_count ?? 0}
+            variant="count"
+          />
+          {(pulseStats?.response_count ?? 0) < PULSE_MIN_RESPONSES ? (
+            <span className="badge">Needs {PULSE_MIN_RESPONSES}+ responses to rank</span>
+          ) : (
+            <span className="badge">Ranked</span>
+          )}
+        </div>
+        {pulseStats ? (
           <div className="mt-3 flex flex-wrap gap-2">
-            <ScorePill
-              label="Overall"
-              value={pulseStats?.overall_avg ?? null}
-              emphasize
-            />
-            <ScorePill
-              label="n"
-              value={pulseStats?.response_count ?? 0}
-              variant="count"
-            />
-            {(pulseStats?.response_count ?? 0) < PULSE_MIN_RESPONSES ? (
-              <span className="badge">Needs {PULSE_MIN_RESPONSES}+ responses to rank</span>
-            ) : (
-              <span className="badge">Ranked</span>
-            )}
+            <ScorePill label="Ease" value={Number(pulseStats.ease_avg)} />
+            <ScorePill label="Joy" value={Number(pulseStats.joy_avg)} />
+            <ScorePill label="Support" value={Number(pulseStats.team_support_avg)} />
+            <ScorePill label="Clarity" value={Number(pulseStats.clarity_avg)} />
+            <ScorePill label="Return" value={Number(pulseStats.would_return_avg)} />
           </div>
-          {pulseStats ? (
-            <div className="mt-3 flex flex-wrap gap-2">
-              <ScorePill label="Ease" value={Number(pulseStats.ease_avg)} />
-              <ScorePill label="Joy" value={Number(pulseStats.joy_avg)} />
-              <ScorePill label="Support" value={Number(pulseStats.team_support_avg)} />
-              <ScorePill label="Clarity" value={Number(pulseStats.clarity_avg)} />
-              <ScorePill label="Return" value={Number(pulseStats.would_return_avg)} />
-            </div>
-          ) : null}
-          <div className="mt-4">
-            <PulseForm projectId={projectRow.id} pulse={myPulse} />
-          </div>
-        </div>
+        ) : null}
       </section>
 
       <section className="surface rounded-2xl p-6">
@@ -283,6 +266,32 @@ export default async function ProjectDetailPage({
             </table>
           </div>
         )}
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-2">
+        <div className="surface rounded-2xl p-6">
+          <SectionHeading
+            title="My readiness"
+            description="Only you can edit your own readiness. Everyone in the org can see the team table."
+            icon={ClipboardList}
+            tone="sky"
+          />
+          <div className="mt-4">
+            <ReadinessForm projectId={projectRow.id} readiness={mine} />
+          </div>
+        </div>
+
+        <div className="surface rounded-2xl p-6">
+          <SectionHeading
+            title="Submit pulse"
+            description="Rate this project anonymously. You can update your vote anytime."
+            icon={HeartPulse}
+            tone="accent"
+          />
+          <div className="mt-4">
+            <PulseForm projectId={projectRow.id} pulse={myPulse} />
+          </div>
+        </div>
       </section>
 
       <section className="surface rounded-2xl p-6">
