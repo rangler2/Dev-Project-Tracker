@@ -6,14 +6,12 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 
 type ConfirmEmailFormProps = {
-  confirmationUrl: string | null;
   tokenHash: string | null;
   type: string | null;
   next: string;
 };
 
 export function ConfirmEmailForm({
-  confirmationUrl,
   tokenHash,
   type,
   next,
@@ -23,22 +21,13 @@ export function ConfirmEmailForm({
   const [error, setError] = useState<string | null>(null);
 
   const canConfirm = useMemo(
-    () => Boolean(confirmationUrl || (tokenHash && type)),
-    [confirmationUrl, tokenHash, type],
+    () => Boolean(tokenHash && type),
+    [tokenHash, type],
   );
 
   async function onConfirm(event: FormEvent) {
     event.preventDefault();
-    if (!canConfirm || loading) return;
-
-    // Prefer an explicit confirmation URL (user gesture → GET verify).
-    // Prefetchers hit this page but do not submit the form.
-    if (confirmationUrl) {
-      window.location.assign(confirmationUrl);
-      return;
-    }
-
-    if (!tokenHash || !type) return;
+    if (!canConfirm || loading || !tokenHash || !type) return;
 
     setLoading(true);
     setError(null);

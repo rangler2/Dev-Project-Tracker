@@ -22,6 +22,10 @@ export type Client = {
   updated_at: string;
 };
 
+export type ClientWithProjectCount = Client & {
+  project_count: number;
+};
+
 export type Project = {
   id: string;
   organization_id: string;

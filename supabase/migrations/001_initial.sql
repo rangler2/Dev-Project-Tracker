@@ -43,7 +43,7 @@ create index clients_org_idx on public.clients (organization_id);
 create table public.projects (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations (id) on delete cascade,
-  client_id uuid not null references public.clients (id) on delete cascade,
+  client_id uuid not null references public.clients (id) on delete restrict,
   name text not null,
   cms text not null default '',
   cms_version text not null default '',
@@ -163,6 +163,11 @@ begin
   select organization_id into new.organization_id
   from public.projects
   where id = new.project_id;
+
+  if new.organization_id is null then
+    raise exception 'Project not found';
+  end if;
+
   return new;
 end;
 $$;
@@ -179,17 +184,53 @@ create or replace function public.set_organization_id_from_client()
 returns trigger
 language plpgsql
 as $$
+declare
+  client_org uuid;
 begin
-  select organization_id into new.organization_id
+  select organization_id into client_org
   from public.clients
   where id = new.client_id;
+
+  if client_org is null then
+    raise exception 'Client not found';
+  end if;
+
+  if tg_op = 'INSERT' then
+    new.organization_id := client_org;
+  elsif new.organization_id is distinct from old.organization_id then
+    raise exception 'Cannot change project organisation';
+  elsif new.organization_id is distinct from client_org then
+    raise exception 'Client must belong to the same organisation as the project';
+  end if;
+
   return new;
 end;
 $$;
 
 create trigger projects_set_org
-  before insert on public.projects
+  before insert or update on public.projects
   for each row execute function public.set_organization_id_from_client();
+
+-- Profiles: only display_name is mutable by the user
+create or replace function public.protect_profile_columns()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.id is distinct from old.id
+    or new.organization_id is distinct from old.organization_id
+    or new.email is distinct from old.email
+    or new.created_at is distinct from old.created_at
+  then
+    raise exception 'Only display_name can be updated on profiles';
+  end if;
+  return new;
+end;
+$$;
+
+create trigger profiles_protect_columns
+  before update on public.profiles
+  for each row execute function public.protect_profile_columns();
 
 create or replace function public.touch_updated_at()
 returns trigger
@@ -210,9 +251,11 @@ create trigger readiness_touch before update on public.project_readiness
 create trigger pulse_touch before update on public.project_pulse
   for each row execute function public.touch_updated_at();
 
--- Aggregate pulse stats (no user_id)
+-- Aggregate pulse stats (no user_id).
+-- security_invoker=false so org aggregates work while base-table SELECT is own-row only.
+-- Must filter by current_organization_id() because owner bypasses RLS.
 create or replace view public.project_pulse_stats
-with (security_invoker = true)
+with (security_invoker = false)
 as
 select
   p.organization_id,
@@ -226,11 +269,12 @@ select
   round(avg(p.would_return)::numeric, 2) as would_return_avg,
   max(p.updated_at) as last_updated
 from public.project_pulse p
+where p.organization_id = public.current_organization_id()
 group by p.organization_id, p.project_id;
 
 -- Anonymous comments feed (no user_id)
 create or replace view public.project_pulse_comments
-with (security_invoker = true)
+with (security_invoker = false)
 as
 select
   id,
@@ -239,7 +283,11 @@ select
   comment,
   updated_at
 from public.project_pulse
-where length(trim(comment)) > 0;
+where organization_id = public.current_organization_id()
+  and length(trim(comment)) > 0;
+
+grant select on public.project_pulse_stats to authenticated, anon;
+grant select on public.project_pulse_comments to authenticated, anon;
 
 -- RLS
 alter table public.organizations enable row level security;
@@ -321,10 +369,14 @@ create policy "users can delete own readiness"
   on public.project_readiness for delete
   using (user_id = auth.uid() and organization_id = public.current_organization_id());
 
--- Pulse: users can manage own vote; org can read for aggregation (UI should prefer views)
-create policy "org members can read pulse"
+-- Pulse: only the author can read their own row (keeps scores/comments anonymous).
+-- Org-wide aggregates/comments go through the security-definer views above.
+create policy "users can read own pulse"
   on public.project_pulse for select
-  using (organization_id = public.current_organization_id());
+  using (
+    user_id = auth.uid()
+    and organization_id = public.current_organization_id()
+  );
 
 create policy "users can insert own pulse"
   on public.project_pulse for insert

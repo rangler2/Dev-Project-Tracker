@@ -12,6 +12,7 @@ import {
 } from "@/lib/demo";
 import type {
   Client,
+  ClientWithProjectCount,
   Project,
   ProjectPulse,
   ProjectPulseComment,
@@ -32,10 +33,28 @@ export async function getOrgName(organizationId: string) {
 }
 
 export async function listClients() {
-  if (DEMO_MODE) return demoClients;
+  if (DEMO_MODE) {
+    return demoClients.map((client) => ({
+      ...client,
+      project_count: demoProjects.filter((p) => p.client_id === client.id)
+        .length,
+    })) satisfies ClientWithProjectCount[];
+  }
   const { supabase } = await requireUser();
-  const { data } = await supabase.from("clients").select("*").order("name");
-  return (data ?? []) as Client[];
+  const { data } = await supabase
+    .from("clients")
+    .select("*, projects(count)")
+    .order("name");
+
+  return (data ?? []).map((row) => {
+    const { projects, ...client } = row as Client & {
+      projects: { count: number }[] | null;
+    };
+    return {
+      ...client,
+      project_count: projects?.[0]?.count ?? 0,
+    } satisfies ClientWithProjectCount;
+  });
 }
 
 export async function listProjects() {

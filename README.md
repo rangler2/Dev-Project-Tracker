@@ -25,9 +25,10 @@ cp .env.example .env.local
 
 Fill in `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` from the Supabase dashboard.
 
-3. Run the SQL migration in the Supabase SQL editor (or via Supabase CLI):
+3. Run the SQL migrations in the Supabase SQL editor (or via Supabase CLI), in order:
 
 - [`supabase/migrations/001_initial.sql`](supabase/migrations/001_initial.sql)
+- [`supabase/migrations/002_security_fixes.sql`](supabase/migrations/002_security_fixes.sql) — required if you already applied an older `001` without the security hardening (pulse anonymity, client delete restrict, etc.). Safe to skip on a fresh install of the current `001`.
 
 Optional demo clients/projects:
 
