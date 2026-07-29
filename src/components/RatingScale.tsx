@@ -126,7 +126,7 @@ export function RatingRadioGroup({
               defaultChecked={(defaultValue ?? 0) === score}
             />
             <span className="rating-option-face">
-              <Star size={14} aria-hidden />
+              <Star size={11} aria-hidden />
               {score}
             </span>
           </label>
