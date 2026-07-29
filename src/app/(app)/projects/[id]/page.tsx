@@ -165,43 +165,45 @@ export default async function ProjectDetailPage({
         </div>
 
         <div className="surface rounded-2xl p-6">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <SectionHeading
-              title="Project pulse"
-              description="Anonymous feel-good ratings for this project."
-              icon={HeartPulse}
-              tone="accent"
-            />
-            <Link href="/leaderboard" className="text-sm font-semibold text-brand">
-              View leaderboard →
-            </Link>
-          </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <ScorePill
-              label="Overall"
-              value={pulseStats?.overall_avg ?? null}
-              emphasize
-            />
-            <ScorePill
-              label="n"
-              value={pulseStats?.response_count ?? 0}
-              variant="count"
-            />
-            {(pulseStats?.response_count ?? 0) < PULSE_MIN_RESPONSES ? (
-              <span className="badge">Needs {PULSE_MIN_RESPONSES}+ responses to rank</span>
-            ) : (
-              <span className="badge">Ranked</span>
-            )}
-          </div>
-          {pulseStats ? (
-            <div className="mt-3 flex flex-wrap gap-2">
-              <ScorePill label="Ease" value={Number(pulseStats.ease_avg)} />
-              <ScorePill label="Joy" value={Number(pulseStats.joy_avg)} />
-              <ScorePill label="Support" value={Number(pulseStats.team_support_avg)} />
-              <ScorePill label="Clarity" value={Number(pulseStats.clarity_avg)} />
-              <ScorePill label="Return" value={Number(pulseStats.would_return_avg)} />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
+              <SectionHeading
+                title="Project pulse"
+                description="Anonymous feel-good ratings for this project."
+                icon={HeartPulse}
+                tone="accent"
+              />
+              <Link href="/leaderboard" className="text-sm font-semibold text-brand">
+                View leaderboard →
+              </Link>
             </div>
-          ) : null}
+            <div className="flex flex-col items-start gap-2">
+              <ScorePill
+                label="Overall"
+                value={pulseStats?.overall_avg ?? null}
+                emphasize
+              />
+              <ScorePill
+                label="n"
+                value={pulseStats?.response_count ?? 0}
+                variant="count"
+              />
+              {(pulseStats?.response_count ?? 0) < PULSE_MIN_RESPONSES ? (
+                <span className="badge">Needs {PULSE_MIN_RESPONSES}+ responses to rank</span>
+              ) : (
+                <span className="badge">Ranked</span>
+              )}
+            </div>
+            {pulseStats ? (
+              <div className="flex flex-col items-start gap-2">
+                <ScorePill label="Ease" value={Number(pulseStats.ease_avg)} />
+                <ScorePill label="Joy" value={Number(pulseStats.joy_avg)} />
+                <ScorePill label="Support" value={Number(pulseStats.team_support_avg)} />
+                <ScorePill label="Clarity" value={Number(pulseStats.clarity_avg)} />
+                <ScorePill label="Return" value={Number(pulseStats.would_return_avg)} />
+              </div>
+            ) : null}
+          </div>
         </div>
       </section>
 
