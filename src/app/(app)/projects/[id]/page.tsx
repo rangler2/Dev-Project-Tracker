@@ -77,130 +77,134 @@ export default async function ProjectDetailPage({
         </form>
       </div>
 
-      <section className="surface rounded-2xl p-6">
-        <SectionHeading
-          title="Project info"
-          description="CMS, FE stack, and notes for this engagement."
-          icon={FolderKanban}
-          tone="brand"
-        />
-        <form action={updateProjectAction} className="mt-4 grid gap-3 md:grid-cols-2">
-          <input type="hidden" name="id" value={projectRow.id} />
-          <div className="md:col-span-2">
-            <label className="label" htmlFor="name">
-              Name
-            </label>
-            <input
-              id="name"
-              name="name"
-              required
-              className="field"
-              defaultValue={projectRow.name}
-            />
-          </div>
-          <div className="md:col-span-2">
-            <label className="label" htmlFor="client_id">
-              Client
-            </label>
-            <select
-              id="client_id"
-              name="client_id"
-              required
-              className="field"
-              defaultValue={projectRow.client_id}
-            >
-              {clientList.map((client) => (
-                <option key={client.id} value={client.id}>
-                  {client.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="md:col-span-2">
-            <label className="label" htmlFor="cms">
-              CMS
-            </label>
-            <input
-              id="cms"
-              name="cms"
-              className="field"
-              placeholder="Sitecore 10.3"
-              defaultValue={
-                [projectRow.cms, projectRow.cms_version]
-                  .filter(Boolean)
-                  .join(" ")
-              }
-            />
-          </div>
-          <div className="md:col-span-2">
-            <label className="label" htmlFor="fe_stack">
-              FE stack
-            </label>
-            <input
-              id="fe_stack"
-              name="fe_stack"
-              className="field"
-              defaultValue={projectRow.fe_stack}
-            />
-          </div>
-          <div className="md:col-span-2">
-            <label className="label" htmlFor="notes">
-              Notes
-            </label>
-            <textarea
-              id="notes"
-              name="notes"
-              rows={3}
-              className="field"
-              defaultValue={projectRow.notes}
-            />
-          </div>
-          <div className="md:col-span-2">
-            <button type="submit" className="btn btn-primary">
-              Save project
-            </button>
-          </div>
-        </form>
-      </section>
-
-      <section className="surface rounded-2xl p-6">
-        <div className="flex flex-wrap items-start justify-between gap-3">
+      <section className="grid gap-6 lg:grid-cols-2 lg:items-start">
+        <div className="surface rounded-2xl p-6">
           <SectionHeading
-            title="Project pulse"
-            description="Anonymous feel-good ratings for this project."
-            icon={HeartPulse}
-            tone="accent"
+            title="Project info"
+            description="CMS, FE stack, and notes for this engagement."
+            icon={FolderKanban}
+            tone="brand"
           />
-          <Link href="/leaderboard" className="text-sm font-semibold text-brand">
-            View leaderboard →
-          </Link>
+          <form action={updateProjectAction} className="mt-4 grid gap-3">
+            <input type="hidden" name="id" value={projectRow.id} />
+            <div>
+              <label className="label" htmlFor="name">
+                Name
+              </label>
+              <input
+                id="name"
+                name="name"
+                required
+                className="field"
+                defaultValue={projectRow.name}
+              />
+            </div>
+            <div>
+              <label className="label" htmlFor="client_id">
+                Client
+              </label>
+              <select
+                id="client_id"
+                name="client_id"
+                required
+                className="field"
+                defaultValue={projectRow.client_id}
+              >
+                {clientList.map((client) => (
+                  <option key={client.id} value={client.id}>
+                    {client.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="label" htmlFor="cms">
+                CMS
+              </label>
+              <input
+                id="cms"
+                name="cms"
+                className="field"
+                placeholder="Sitecore 10.3"
+                defaultValue={
+                  [projectRow.cms, projectRow.cms_version]
+                    .filter(Boolean)
+                    .join(" ")
+                }
+              />
+            </div>
+            <div>
+              <label className="label" htmlFor="fe_stack">
+                FE stack
+              </label>
+              <input
+                id="fe_stack"
+                name="fe_stack"
+                className="field"
+                defaultValue={projectRow.fe_stack}
+              />
+            </div>
+            <div>
+              <label className="label" htmlFor="notes">
+                Notes
+              </label>
+              <textarea
+                id="notes"
+                name="notes"
+                rows={3}
+                className="field"
+                defaultValue={projectRow.notes}
+              />
+            </div>
+            <div>
+              <button type="submit" className="btn btn-primary">
+                Save project
+              </button>
+            </div>
+          </form>
         </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <ScorePill
-            label="Overall"
-            value={pulseStats?.overall_avg ?? null}
-            emphasize
-          />
-          <ScorePill
-            label="n"
-            value={pulseStats?.response_count ?? 0}
-            variant="count"
-          />
-          {(pulseStats?.response_count ?? 0) < PULSE_MIN_RESPONSES ? (
-            <span className="badge">Needs {PULSE_MIN_RESPONSES}+ responses to rank</span>
-          ) : (
-            <span className="badge">Ranked</span>
-          )}
-        </div>
-        {pulseStats ? (
-          <div className="mt-3 flex flex-wrap gap-2">
-            <ScorePill label="Ease" value={Number(pulseStats.ease_avg)} />
-            <ScorePill label="Joy" value={Number(pulseStats.joy_avg)} />
-            <ScorePill label="Support" value={Number(pulseStats.team_support_avg)} />
-            <ScorePill label="Clarity" value={Number(pulseStats.clarity_avg)} />
-            <ScorePill label="Return" value={Number(pulseStats.would_return_avg)} />
+
+        <div className="surface rounded-2xl p-6">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
+              <SectionHeading
+                title="Project pulse"
+                description="Anonymous feel-good ratings for this project."
+                icon={HeartPulse}
+                tone="accent"
+              />
+              <Link href="/leaderboard" className="text-sm font-semibold text-brand">
+                View leaderboard →
+              </Link>
+            </div>
+            <div className="flex flex-col items-start gap-2">
+              <ScorePill
+                label="Overall"
+                value={pulseStats?.overall_avg ?? null}
+                emphasize
+              />
+              <ScorePill
+                label="n"
+                value={pulseStats?.response_count ?? 0}
+                variant="count"
+              />
+              {(pulseStats?.response_count ?? 0) < PULSE_MIN_RESPONSES ? (
+                <span className="badge">Needs {PULSE_MIN_RESPONSES}+ responses to rank</span>
+              ) : (
+                <span className="badge">Ranked</span>
+              )}
+            </div>
+            {pulseStats ? (
+              <div className="flex flex-col items-start gap-2">
+                <ScorePill label="Ease" value={Number(pulseStats.ease_avg)} />
+                <ScorePill label="Joy" value={Number(pulseStats.joy_avg)} />
+                <ScorePill label="Support" value={Number(pulseStats.team_support_avg)} />
+                <ScorePill label="Clarity" value={Number(pulseStats.clarity_avg)} />
+                <ScorePill label="Return" value={Number(pulseStats.would_return_avg)} />
+              </div>
+            ) : null}
           </div>
-        ) : null}
+        </div>
       </section>
 
       <section className="surface rounded-2xl p-6">
