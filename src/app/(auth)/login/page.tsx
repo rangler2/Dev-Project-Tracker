@@ -1,11 +1,18 @@
+import { authErrorMessage } from "@/lib/auth-errors";
+import { AuthHashRedirect } from "./AuthHashRedirect";
 import { LoginForm } from "./LoginForm";
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{
+    error?: string;
+    error_code?: string;
+    error_description?: string;
+  }>;
 }) {
   const params = await searchParams;
+  const banner = authErrorMessage(params);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-lg flex-col justify-center px-4 py-12">
@@ -20,12 +27,12 @@ export default async function LoginPage({
           Sign in with your work email. Access is limited to approved organisation
           domains.
         </p>
-        {params.error === "profile" ? (
+        {banner ? (
           <p className="mt-4 rounded-lg bg-accent-soft px-3 py-2 text-sm text-accent">
-            Your account could not be linked to an organisation. Use a company
-            email domain that has been allowed.
+            {banner}
           </p>
         ) : null}
+        <AuthHashRedirect />
         <div className="mt-8">
           <LoginForm />
         </div>
