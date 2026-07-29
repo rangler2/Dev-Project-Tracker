@@ -24,24 +24,6 @@ export default async function ClientsPage() {
         </div>
       </div>
 
-      <section className="surface rounded-2xl p-6">
-        <h2 className="font-[family-name:var(--font-display)] text-2xl">
-          Add client
-        </h2>
-        <form action={createClientAction} className="mt-4 flex flex-col gap-3 sm:flex-row">
-          <input
-            name="name"
-            required
-            className="field"
-            placeholder="Client name"
-            aria-label="Client name"
-          />
-          <button type="submit" className="btn btn-primary whitespace-nowrap">
-            Create client
-          </button>
-        </form>
-      </section>
-
       {list.length === 0 ? (
         <EmptyState
           title="No clients yet"
@@ -97,6 +79,24 @@ export default async function ClientsPage() {
           </div>
         </section>
       )}
+
+      <section className="surface rounded-2xl p-6">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl">
+          Add client
+        </h2>
+        <form action={createClientAction} className="mt-4 flex flex-col gap-3 sm:flex-row">
+          <input
+            name="name"
+            required
+            className="field"
+            placeholder="Client name"
+            aria-label="Client name"
+          />
+          <button type="submit" className="btn btn-primary whitespace-nowrap">
+            Create client
+          </button>
+        </form>
+      </section>
     </div>
   );
 }
